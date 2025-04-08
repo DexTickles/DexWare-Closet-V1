@@ -1,0 +1,120 @@
+-- DexWare GUI Script
+local UserInputService = game:GetService("UserInputService")
+local guiVisible = true
+
+-- Create ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "DexWareGUI"
+screenGui.Parent = game.CoreGui
+screenGui.ResetOnSpawn = false
+
+-- Create Main Frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 400, 0, 400)
+mainFrame.Position = UDim2.new(0.5, -200, 0.5, -200)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = screenGui
+
+-- Title
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundTransparency = 1
+title.Text = "DexWare : Closet"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 18
+title.Parent = mainFrame
+
+local function createToggle(text, posY)
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(0, 180, 0, 30)
+	btn.Position = UDim2.new(0, 20, 0, posY)
+	btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	btn.Text = text .. ": OFF"
+	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.Font = Enum.Font.Gotham
+	btn.TextSize = 14
+	btn.Parent = mainFrame
+
+	local toggled = false
+	btn.MouseButton1Click:Connect(function()
+		toggled = not toggled
+		btn.Text = text .. ": " .. (toggled and "ON" or "OFF")
+	end)
+
+	return btn
+end
+
+local function createSlider(labelText, posY, default)
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.new(0, 150, 0, 20)
+	label.Position = UDim2.new(0, 220, 0, posY)
+	label.BackgroundTransparency = 1
+	label.Text = labelText .. ": " .. tostring(default)
+	label.TextColor3 = Color3.fromRGB(255, 255, 255)
+	label.Font = Enum.Font.Gotham
+	label.TextSize = 13
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.Parent = mainFrame
+
+	local slider = Instance.new("TextButton")
+	slider.Size = UDim2.new(0, 150, 0, 20)
+	slider.Position = UDim2.new(0, 220, 0, posY + 20)
+	slider.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	slider.Text = ""
+	slider.AutoButtonColor = false
+	slider.Parent = mainFrame
+
+	local fill = Instance.new("Frame")
+	fill.Size = UDim2.new(default / 100, 0, 1, 0)
+	fill.BackgroundColor3 = Color3.fromRGB(100, 100, 255)
+	fill.BorderSizePixel = 0
+	fill.Parent = slider
+
+	local dragging = false
+	slider.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragging = true
+		end
+	end)
+
+	slider.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragging = false
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+			local relX = math.clamp((input.Position.X - slider.AbsolutePosition.X) / slider.AbsoluteSize.X, 0, 1)
+			fill.Size = UDim2.new(relX, 0, 1, 0)
+			label.Text = labelText .. ": " .. tostring(math.floor(relX * 100))
+		end
+	end)
+end
+
+-- Left side toggles
+createToggle("Always Hit", 40)
+createToggle("Show FOV", 80)
+createToggle("Triggerbot", 120)
+createToggle("HBE", 160)
+
+-- Right side toggles
+createToggle("Visual ESP", 40).Position = UDim2.new(0, 220, 0, 40)
+createToggle("Skeleton ESP", 80).Position = UDim2.new(0, 220, 0, 80)
+createToggle("HEAD ESP", 120).Position = UDim2.new(0, 220, 0, 120)
+createToggle("Line ESP", 160).Position = UDim2.new(0, 220, 0, 160)
+createToggle("2D Box ESP", 200).Position = UDim2.new(0, 220, 0, 200)
+
+-- Sliders
+createSlider("FOV Radius", 200, 63)
+createSlider("Skeleton Thickness", 240, 15)
+
+-- Right Ctrl to toggle GUI visibility
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if input.KeyCode == Enum.KeyCode.RightControl and not gameProcessed then
+		guiVisible = not guiVisible
+		screenGui.Enabled = guiVisible
+	end
+end)
