@@ -1,120 +1,117 @@
--- DexWare GUI Script
-local UserInputService = game:GetService("UserInputService")
-local guiVisible = true
+-- DexWare GUI (Modern Style + Functional)
+local player = game.Players.LocalPlayer
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 
--- Create ScreenGui
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "DexWareGUI"
-screenGui.Parent = game.CoreGui
-screenGui.ResetOnSpawn = false
+-- Main Frame
+local main = Instance.new("Frame")
+main.Size = UDim2.new(0, 400, 0, 500)
+main.Position = UDim2.new(0.5, -200, 0.5, -250)
+main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+main.BorderSizePixel = 0
+main.Name = "DexWareMain"
+main.Parent = gui
 
--- Create Main Frame
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 400, 0, 400)
-mainFrame.Position = UDim2.new(0.5, -200, 0.5, -200)
-mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-mainFrame.BorderSizePixel = 0
-mainFrame.Parent = screenGui
+-- UI Corner
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = main
 
 -- Title
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 30)
-title.BackgroundTransparency = 1
 title.Text = "DexWare : Closet"
+title.Size = UDim2.new(1, 0, 0, 40)
+title.BackgroundTransparency = 1
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.Font = Enum.Font.GothamBold
-title.TextSize = 18
-title.Parent = mainFrame
+title.Font = Enum.Font.FredokaOne
+title.TextSize = 24
+title.Parent = main
 
-local function createToggle(text, posY)
+-- UIListLayout
+local list = Instance.new("UIListLayout")
+list.Padding = UDim.new(0, 10)
+list.FillDirection = Enum.FillDirection.Vertical
+list.HorizontalAlignment = Enum.HorizontalAlignment.Center
+list.SortOrder = Enum.SortOrder.LayoutOrder
+list.Parent = main
+
+title.LayoutOrder = 0
+
+-- Create Toggle Function
+local function createToggle(text)
 	local btn = Instance.new("TextButton")
-	btn.Size = UDim2.new(0, 180, 0, 30)
-	btn.Position = UDim2.new(0, 20, 0, posY)
+	btn.Size = UDim2.new(0.9, 0, 0, 40)
 	btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-	btn.Text = text .. ": OFF"
 	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-	btn.Font = Enum.Font.Gotham
-	btn.TextSize = 14
-	btn.Parent = mainFrame
+	btn.Font = Enum.Font.GothamBold
+	btn.TextSize = 18
+	btn.Text = text .. ": OFF"
+	btn.Parent = main
 
 	local toggled = false
 	btn.MouseButton1Click:Connect(function()
 		toggled = not toggled
 		btn.Text = text .. ": " .. (toggled and "ON" or "OFF")
+		btn.BackgroundColor3 = toggled and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(40, 40, 40)
+		print(text .. " toggled to: ", toggled)
 	end)
-
-	return btn
 end
 
-local function createSlider(labelText, posY, default)
-	local label = Instance.new("TextLabel")
-	label.Size = UDim2.new(0, 150, 0, 20)
-	label.Position = UDim2.new(0, 220, 0, posY)
-	label.BackgroundTransparency = 1
-	label.Text = labelText .. ": " .. tostring(default)
-	label.TextColor3 = Color3.fromRGB(255, 255, 255)
-	label.Font = Enum.Font.Gotham
-	label.TextSize = 13
-	label.TextXAlignment = Enum.TextXAlignment.Left
-	label.Parent = mainFrame
+-- Create Slider Function
+local function createSlider(text, min, max, default)
+	local holder = Instance.new("Frame")
+	holder.Size = UDim2.new(0.9, 0, 0, 60)
+	holder.BackgroundTransparency = 1
+	holder.Parent = main
 
-	local slider = Instance.new("TextButton")
-	slider.Size = UDim2.new(0, 150, 0, 20)
-	slider.Position = UDim2.new(0, 220, 0, posY + 20)
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.new(1, 0, 0, 20)
+	label.Text = text .. ": " .. default
+	label.TextColor3 = Color3.fromRGB(255, 255, 255)
+	label.BackgroundTransparency = 1
+	label.Font = Enum.Font.Gotham
+	label.TextSize = 16
+	label.Parent = holder
+
+	local slider = Instance.new("Frame")
+	slider.Size = UDim2.new(1, 0, 0, 20)
+	slider.Position = UDim2.new(0, 0, 0, 30)
 	slider.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-	slider.Text = ""
-	slider.AutoButtonColor = false
-	slider.Parent = mainFrame
+	slider.Parent = holder
 
 	local fill = Instance.new("Frame")
-	fill.Size = UDim2.new(default / 100, 0, 1, 0)
-	fill.BackgroundColor3 = Color3.fromRGB(100, 100, 255)
+	fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
+	fill.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
 	fill.BorderSizePixel = 0
 	fill.Parent = slider
 
-	local dragging = false
 	slider.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			dragging = true
-		end
-	end)
-
-	slider.InputEnded:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			dragging = false
-		end
-	end)
-
-	UserInputService.InputChanged:Connect(function(input)
-		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-			local relX = math.clamp((input.Position.X - slider.AbsolutePosition.X) / slider.AbsoluteSize.X, 0, 1)
-			fill.Size = UDim2.new(relX, 0, 1, 0)
-			label.Text = labelText .. ": " .. tostring(math.floor(relX * 100))
+			local moveConnection
+			moveConnection = game:GetService("UserInputService").InputChanged:Connect(function(moveInput)
+				if moveInput.UserInputType == Enum.UserInputType.MouseMovement then
+					local x = math.clamp((moveInput.Position.X - slider.AbsolutePosition.X) / slider.AbsoluteSize.X, 0, 1)
+					fill.Size = UDim2.new(x, 0, 1, 0)
+					local value = math.floor(min + (max - min) * x)
+					label.Text = text .. ": " .. value
+				end
+			end)
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					moveConnection:Disconnect()
+				end
+			end)
 		end
 	end)
 end
 
--- Left side toggles
-createToggle("Always Hit", 40)
-createToggle("Show FOV", 80)
-createToggle("Triggerbot", 120)
-createToggle("HBE", 160)
+-- Add Toggles
+local toggleOptions = {
+	"Always Hit", "Show FOV", "Triggerbot", "HBE",
+	"Visual ESP", "Skeleton ESP", "HEAD ESP", "Line ESP", "FOV Radius", "Box ESP"
+}
+for _, option in ipairs(toggleOptions) do
+	createToggle(option)
+end
 
--- Right side toggles
-createToggle("Visual ESP", 40).Position = UDim2.new(0, 220, 0, 40)
-createToggle("Skeleton ESP", 80).Position = UDim2.new(0, 220, 0, 80)
-createToggle("HEAD ESP", 120).Position = UDim2.new(0, 220, 0, 120)
-createToggle("Line ESP", 160).Position = UDim2.new(0, 220, 0, 160)
-createToggle("2D Box ESP", 200).Position = UDim2.new(0, 220, 0, 200)
-
--- Sliders
-createSlider("FOV Radius", 200, 63)
-createSlider("Skeleton Thickness", 240, 15)
-
--- Right Ctrl to toggle GUI visibility
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-	if input.KeyCode == Enum.KeyCode.RightControl and not gameProcessed then
-		guiVisible = not guiVisible
-		screenGui.Enabled = guiVisible
-	end
-end)
+-- Add Slider
+createSlider("Skeleton Thickness", 1, 30, 15)
